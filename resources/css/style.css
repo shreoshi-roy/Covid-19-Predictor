@@ -304,11 +304,17 @@ footer{
 .contact-icons{
   display: table;
   margin: 0 auto;
-  color: #fff
 }
 .social-icon{
   margin: 0 10px 0 0;
   cursor: pointer;
+  color: #fff;
+}
+.fa-github:hover{
+  color: #6e5494;
+}
+.fa-linkedin:hover{
+  color: #2867B2;
 }
 /* ---------------------------------------------- */
 /*             SCREEN WIDTH < 600px               */
