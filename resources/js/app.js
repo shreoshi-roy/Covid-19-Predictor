@@ -39,7 +39,7 @@ let cases_list= [],     //total cases or confirmed cases
 
 let app_data;       //stores results fetched from google sheets API
 let global_country_name;
-var starti,endi,endi_for_predicted,i;
+var starti,endi,endi_for_predicted,i,create_map=1;     //create_map notes if app is running for the first time and thus map has to be made
 
 // GET USERS COUNTRY CODE ACCORDING TO IP ADDRESS
 // let country_code= geoplugin_countryCode();
@@ -49,7 +49,6 @@ var starti,endi,endi_for_predicted,i;
 //   }
 // });
 global_country_name="India";
-
 
 /* ------------------------------------------------------------------- */
 /*    FETCHING DATA FROM GOOGLE SHEETS AND CALCULATING LIST VALUES     */
@@ -69,7 +68,7 @@ function fetchData(user_country){
     user_country= global_country_name;
   }
 
-
+  //Making all arrays empty so that new countriy's data can be stored instead of pushing into the old country's array
   cases_list=[], recovered_list=[], deaths_list=[],actual_cases_list= [],predicted_cases_list= [],recovery_deaths_list= [],actual_rate_list= [],recovery_death_rate_list= [],dates= [],formatted_dates=[],dates_for_predicted= [],formatted_predicted_dates= [], countries2d= [];
 
   new_cases_element.innerHTML = '+';
@@ -88,29 +87,34 @@ function fetchData(user_country){
     const res= Http.responseText;
     const result= JSON.parse(res);
 
-    mapData(result);
+    //Sending the retrieved data to myData function to build a 2D array for making map
+    if(create_map==1)
+      mapData(result);
 
+    //Finding index in Excel sheet from where given country's data begins
     for (starti = 1; starti < result.values.length; starti++) {
       if (result.values[starti][0]== user_country)
         break;
     }
-    var values_finished=0;
+
+    //Finding index in Excel sheet from where given country's data ends
+    var values_finished=0;        //this variable notes if the country contains any predicted cases data or not
     for (endi = starti; endi < result.values.length; endi++) {
       if (result.values[endi][0]!= user_country)
         break;
-      else if ( result.values[endi][2].length==0){
+      else if (result.values[endi][2].length==0){   //confirmed cases data[endi][2] is finished but country name data is present in that row this means there are values in predicted cases column
         values_finished=1;
         break;
       }
     }
-    if (values_finished==1){
+    if (values_finished==1){       //predicted cases data is present
       for (endi_for_predicted = endi; endi_for_predicted < result.values.length; endi_for_predicted++) {
         if (result.values[endi_for_predicted][0]!= user_country){
           break;
         }
       }
     }
-    else{
+    else{           //predicted cases data is not present
       endi_for_predicted=endi;
     }
 
@@ -134,10 +138,7 @@ function fetchData(user_country){
     for (i = starti; i <= endi; i++) {
       actual_cases_list.push(parseInt(result.values[i][6]));
     }
-    for (i = starti; i <= endi_for_predicted; i++) {
-      if(i+1>endi_for_predicted){    //there was an unknown error when not using this
-        break;
-      }
+    for (i = starti; i < endi_for_predicted; i++) {
       predicted_cases_list.push(parseInt(result.values[i][5]));
     }
     for (i = starti; i <= endi; i++) {
@@ -154,7 +155,6 @@ function fetchData(user_country){
     updateUI();
     }
   }
-
 }
 
 fetchData(global_country_name);
@@ -162,7 +162,6 @@ fetchData(global_country_name);
 //UPDATE UI FUNCTION
 function updateUI(){
   updateStats();
-  updateMap();
   chart1();
   chart2_calc();
   chart3();
@@ -174,23 +173,26 @@ function updateUI(){
 /* ---------------------------------------------- */
 //MapData function creates a 2D array with country names and their cases. This array is used to build the world map
 function mapData(result){
-  var flag=0;
+  create_map=0;     //we only have to make map when app is running for the first time
+  var flag=0;       //flag stores if a country contains predicted cases data or not. Loop will break when flag=1
   countries2d.push(['Country', 'Confirmed Cases']);
   for(i=1; i<result.values.length-1;++i){
-    if(result.values[i][0]!= result.values[i+1][0] && flag==0)      //for countries with no predicted dataset
+    if(result.values[i][0]!= result.values[i+1][0] && flag==0)   //for countries with no predicted dataset. First condition checks if a country's data is finished and flag checks if a country contains predicted dataset
       countries2d.push([result.values[i][0], parseInt(result.values[i][2])]);
-    else if(!result.values[i+1][2] && result.values[i][0]== result.values[i+1][0] && flag==0){
+    else if(!result.values[i+1][2] && result.values[i][0]== result.values[i+1][0] && flag==0){   //no confirmed cases[2] but country's data is not finsihed[0] this means predicted dataset is present
       flag=1;
       countries2d.push([result.values[i][0], parseInt(result.values[i][2])]);
     }
     else if(result.values[i][0]!= result.values[i+1][0])     //country changed
       flag=0;
   }
+  createMap();
 }
 
 
 var flag=0;
-function updateMap(){
+function createMap(){
+  console.log("triggered")
   google.charts.load('current', {
         'packages':['geochart'],
         'mapsApiKey': 'AIzaSyB2AdWGI5geyvPnxxTPKUv6rUvbrLuK8bE'
@@ -199,7 +201,6 @@ function updateMap(){
 
       function drawRegionsMap() {
         var data = google.visualization.arrayToDataTable(countries2d);
-        //console.log(data);
 
         var options = {
           colorAxis: {colors: ['#fce9c4','#f8cb74','#f7c461','#f5b539','#dda333','#d5873f','#ac7f28','#941e40'], stroke: '#34c', strokeWidth: 130},
@@ -231,6 +232,7 @@ function updateMap(){
           chart.draw(data, options);
       }
 }
+
 
 /* ---------------------------------------------- */
 /*              UPDATING INNER HTML                */
