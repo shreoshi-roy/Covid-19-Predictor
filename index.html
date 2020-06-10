@@ -3,7 +3,7 @@
 
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" contents="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Covid-19 Predictor</title>
   <!-- Favicon -->
   <link href="./resources/img/favicon.ico" rel="icon" type="image/x-icon" />
@@ -73,12 +73,12 @@
       </div>
 
       <div class="row body-row conatiner-fluid">
-        <div class="chart col-lg-6 col-md-12">
+        <div class="chart col-lg-6 col-md-12 graph1">
           <canvas id="chart_1"></canvas>
           <p>Graph above shows actual cases and predicted cases in future. The predictions were built using an epidemiology model SIR and coded in python. More info on SIR Model can be found <a href="https://idmod.org/docs/general/model-sir.html">here</a></p>
         </div>
 
-        <div class="chart col-lg-6">
+        <div class="chart col-lg-6 graph2">
           <canvas id="chart_2"></canvas>
           <p>Above graph shows countries already recovered from the pandemic and countries yet to recover. The countries at the beginning of the spread start from the top left corner and gradually as the spread comes to an end, it reaches to the bottom right corner of the graph. Countries that have crossed this pink line and gone on the right side of it are considered to have been recovered from the coronavirus spread.
           </p>
@@ -86,11 +86,11 @@
       </div>
 
       <div class="row body-row conatiner-fluid">
-        <div class="chart col-lg-6 col-md-12 bottom-chart">
+        <div class="chart col-lg-6 col-md-12 bottom-chart graph3">
           <canvas id="chart_3"></canvas>
         </div>
 
-        <div class="chart col-lg-6 col-md-12 bottom-chart">
+        <div class="chart col-lg-6 col-md-12 bottom-chart graph4">
           <canvas id="chart_4"></canvas>
         </div>
         <p>Above 2 graphs can help in understanding when countries may reach the peak of the virus spread. Graph on the left shows Actual % cases and Recovery + Death % cases. These 2 lines have to move towards each other and cross each other.
