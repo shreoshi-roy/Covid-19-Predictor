@@ -190,9 +190,7 @@ function mapData(result){
 }
 
 
-var flag=0;
 function createMap(){
-  console.log("triggered")
   google.charts.load('current', {
         'packages':['geochart'],
         'mapsApiKey': 'AIzaSyB2AdWGI5geyvPnxxTPKUv6rUvbrLuK8bE'
@@ -209,7 +207,7 @@ function createMap(){
           displayMode: 'regions',
           enableRegionInteractivity: 'true',
           resolution: 'countries',
-          sizeAxis: {minValue: 1, maxValue:1,minSize:10,  maxSize: 10},
+          sizeAxis: {minValue: 1, maxValue:1,minSize:10, maxSize: 10},
           region:'world',
           keepAspectRatio: true,
           tooltip: {isHtml:'true',textStyle: {color: '#444444'}, trigger:'focus'}};
@@ -222,14 +220,12 @@ function createMap(){
           let countrycode= eventData.region;
           for (i=0;i<country_list.length;++i){
             if(country_list[i].code == eventData.region){
-              flag=1;
               fetchData(country_list[i].name);
             }
           }
         })
 
-        if(flag==0)
-          chart.draw(data, options);
+        chart.draw(data, options);
       }
 }
 
@@ -269,13 +265,13 @@ function chart1(){
   //Finding Peak Date of active cases
   var max=0;
   if(predicted_cases_list[0]!=0){
-    for(i=0;i<predicted_cases_list.length;i++){
+    for(i=0;i<predicted_cases_list.length;i++){       //if predicted data is present
       if(predicted_cases_list[i]>predicted_cases_list[max])
         max=i;
     }
     peak_date= formatted_predicted_dates[max];
   }
-else{
+else{       //if predicted data is not present
   for(i=0;i<actual_cases_list.length;i++){
     if(actual_cases_list[i]>actual_cases_list[max])
       max=i;
@@ -337,11 +333,12 @@ else{
 /* ---------------------------------------------- */
 /*                    GRAPH 2                     */
 /* ---------------------------------------------- */
-let series = [], pointBackgroundColor = [], vertical_line_data=[];
+let pointBackgroundColor = [], vertical_line_data=[];
 
 function chart2_calc(){
-  country_log= [], country_rate= [], country_list_from_sheet= [], series=[], pointBackgroundColor=[], vertical_line_data=[];
-  var max_country_rate=0;
+  //Making all arrays empty so that arrays can be built according to new country
+  country_log= [], country_rate= [], country_list_from_sheet= [], pointBackgroundColor=[], vertical_line_data=[];
+  var max_country_rate=0;         //max value upto which pink line should go
   //Using AJAX to make an asynchronous HTTP GET request
   const Http = new XMLHttpRequest();
   const url='https://sheets.googleapis.com/v4/spreadsheets/1LvNBASr46zst9kTMi5cAQR7tQZXBV1YiJZruDNH4J_8/values/Sheet1?key=AIzaSyB2AdWGI5geyvPnxxTPKUv6rUvbrLuK8bE';
@@ -353,7 +350,6 @@ function chart2_calc(){
       const res= Http.responseText;
       const result= JSON.parse(res);
 
-      var i;
       for (i = 1; i < result.values.length; i++) {
         country_log.push(parseFloat(result.values[i][2]));
       }
@@ -365,31 +361,27 @@ function chart2_calc(){
       for (i = 1; i < result.values.length; i++) {
         country_list_from_sheet.push(result.values[i][0]);
       }
-      for (i = 1; i < result.values.length; i++) {
-        series.push(parseFloat(result.values[i][2]));
-      }
-      for (i = 1; i < result.values.length; i++) {
+      for (i = 1; i < result.values.length; i++) {     //because the vertical line is actually a bar chart so we need to make most values zero so they don't appear
         if(parseFloat(result.values[i][2])== 6.00)
           vertical_line_data.push(max_country_rate);
         else
           vertical_line_data.push(0);
       }
 
-      series.forEach(
-        (value, index) => {
-          if (country_list_from_sheet[index] == global_country_name ||
-              country_list_from_sheet[index]== "China"  ||
-              country_list_from_sheet[index]== "Italy"  ||
-              country_list_from_sheet[index]== "US"  ||
-              country_list_from_sheet[index]== "India") {
-            pointBackgroundColor.push('#f5b539');
-          } else {
-            pointBackgroundColor.push('transparent');
-          }
-          if (country_list_from_sheet[index] == global_country_name){
-            pointBackgroundColor[index]= '#f4465d';
-          }
-        });
+      //Assigning colors to different data points
+      country_log.forEach( (value, index) => {
+        if (country_list_from_sheet[index]== "China"  ||
+            country_list_from_sheet[index]== "Italy"  ||
+            country_list_from_sheet[index]== "US"  ||
+            country_list_from_sheet[index]== "India") {
+          pointBackgroundColor.push('#f5b539');
+        } else {
+          pointBackgroundColor.push('transparent');
+        }
+        if (country_list_from_sheet[index] == global_country_name){    //selected country should be red
+          pointBackgroundColor[index]= '#f4465d';
+        }
+      });
 
       chart2();
     }
@@ -433,7 +425,7 @@ function chart2(){
         xAxes: [{
           gridLines: {display:false},
           scaleLabel: {display: true, labelString: 'Log Rate of Confirmed Cases'},
-          ticks: {autoSkip: true, maxTicksLimit: 10}
+          ticks: {autoSkip: true, maxTicksLimit: 10}       //intervals on x-axis
         }],
         yAxes: [{
           gridLines: {display:false},
@@ -446,8 +438,6 @@ function chart2(){
           //Turning off tooltips for barchart
           if(data.datasets[tooltipItem.datasetIndex].data== vertical_line_data)
             return false;
-          else if(data.datasets[tooltipItem.datasetIndex].data.length< country_list_from_sheet.length)
-            return false;
           else
             return true;
         },
@@ -458,11 +448,11 @@ function chart2(){
                   country_list_from_sheet[tooltipItem.index]== "Italy"  ||
                   country_list_from_sheet[tooltipItem.index]== "US"  ||
                   country_list_from_sheet[tooltipItem.index]== "India"){
-                var label = country_list_from_sheet[tooltipItem.index];
+                var label = country_list_from_sheet[tooltipItem.index];    //labels should be country names if the above condition is satisfied otherwise they will be blank
               }
               return label;
           },
-          title: function(tooltipItem, data) {
+          title: function(tooltipItem, data) {        //title should be blank
             return;
           }
         },
