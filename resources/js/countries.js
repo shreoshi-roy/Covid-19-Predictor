@@ -31,7 +31,7 @@ let country_list = [
     { name: 'Mexico', code: 'MX' },
     { name: 'Denmark', code: 'DK' },
     { name: 'Norway', code: 'NO' },
-    { name: 'UAE', code: 'AE' },
+    { name: 'United Arab Emirates', code: 'AE' },
     { name: 'Czechia', code: 'CZ' },
     { name: 'Australia', code: 'AU' },
     { name: 'Singapore', code: 'SG' },
