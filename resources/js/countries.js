@@ -70,7 +70,7 @@ let country_list = [
     { name: 'Slovenia', code: 'SI' },
     { name: 'Lithuania', code: 'LT' },
     { name: 'Armenia', code: 'AM' },
-    { name: 'Bosnia and Herzegovina', code: 'BA' },
+  //  { name: 'Bosnia and Herzegovina', code: 'BA' },
     { name: 'Oman', code: 'OM' },
     { name: 'North Macedonia', code: 'MK' },
     { name: 'Slovakia', code: 'SK' },
@@ -168,7 +168,7 @@ let country_list = [
     { name: 'Mauritania', code: 'MR' },
     { name: 'Burundi', code: 'BI' },
     { name: 'Bhutan', code: 'BT' },
-    { name: 'Sao Tome and Principe', code: 'ST' },
+  //  { name: 'Sao Tome and Principe', code: 'ST' },
     { name: 'South Sudan', code: 'SD' },
     { name: 'Yemen', code: 'YE' },
     { name: 'China', code: 'CN' }
