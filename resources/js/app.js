@@ -37,7 +37,7 @@ let cases_list= [],     //total cases or confirmed cases
     country_list_from_sheet= [],     //for graph 2
     countries2d= [];        //for making google geomaps
 
-let app_data;
+let app_data;       //stores results fetched from google sheets API
 let global_country_name;
 var starti,endi,endi_for_predicted,i;
 
@@ -88,12 +88,6 @@ function fetchData(user_country){
     const res= Http.responseText;
     const result= JSON.parse(res);
 
-    // for (starti = 1; starti < result.values.length; starti++) {
-    //   for(i=0; i<country_list.length;++i){
-    //   if (result.values[starti][0]!= user_country)
-    //     break;
-    //   }
-    // }
     mapData(result);
 
     for (starti = 1; starti < result.values.length; starti++) {
@@ -178,12 +172,11 @@ function updateUI(){
 /* ---------------------------------------------- */
 /*                      MAP                       */
 /* ---------------------------------------------- */
+//MapData function creates a 2D array with country names and their cases. This array is used to build the world map
 function mapData(result){
   var flag=0;
   countries2d.push(['Country', 'Confirmed Cases']);
   for(i=1; i<result.values.length-1;++i){
-    // if(result.values[i][0]== "US")
-    //   continue;
     if(result.values[i][0]!= result.values[i+1][0] && flag==0)      //for countries with no predicted dataset
       countries2d.push([result.values[i][0], parseInt(result.values[i][2])]);
     else if(!result.values[i+1][2] && result.values[i][0]== result.values[i+1][0] && flag==0){
@@ -200,8 +193,6 @@ var flag=0;
 function updateMap(){
   google.charts.load('current', {
         'packages':['geochart'],
-        // Note: you will need to get a mapsApiKey for your project.
-        // See: https://developers.google.com/chart/interactive/docs/basic_load_libs#load-settings
         'mapsApiKey': 'AIzaSyB2AdWGI5geyvPnxxTPKUv6rUvbrLuK8bE'
       });
       google.charts.setOnLoadCallback(drawRegionsMap);
@@ -234,28 +225,10 @@ function updateMap(){
               fetchData(country_list[i].name);
             }
           }
-
-    // var countryISO2 = eventData["region"];
-    // inputCountryToValUpCase = "world";
-    // displaySearchResults(countryISO2, inputCountryToValUpCase);
         })
 
         if(flag==0)
           chart.draw(data, options);
-
-        //To make only selected country colored
-        // google.visualization.events.addListener(chart, 'select', function () {
-        //   for (var i = 0; i < data.getNumberOfRows(); i++) {
-        //     console.log(chart.getSelection()[0]);
-        //     if (i === chart.getSelection()[0].row) {
-        //       data.setValue(i, 1, 1920000);
-        //     }
-        //     // } else {
-        //     //   data.setValue(i, 1, 0);
-        //     // }
-        //   }
-        //   chart.draw(data, options);
-        // });
       }
 }
 
@@ -316,7 +289,7 @@ else{
     type: 'bar',
     data: {
         datasets: [{
-            label: 'Actual Cases',
+            label: 'Active Cases',
             data: actual_cases_list,
             fill: false,
             borderColor: '##ff6b71',
@@ -366,6 +339,7 @@ let series = [], pointBackgroundColor = [], vertical_line_data=[];
 
 function chart2_calc(){
   country_log= [], country_rate= [], country_list_from_sheet= [], series=[], pointBackgroundColor=[], vertical_line_data=[];
+  var max_country_rate=0;
   //Using AJAX to make an asynchronous HTTP GET request
   const Http = new XMLHttpRequest();
   const url='https://sheets.googleapis.com/v4/spreadsheets/1LvNBASr46zst9kTMi5cAQR7tQZXBV1YiJZruDNH4J_8/values/Sheet1?key=AIzaSyB2AdWGI5geyvPnxxTPKUv6rUvbrLuK8bE';
@@ -383,6 +357,8 @@ function chart2_calc(){
       }
       for (i = 1; i < result.values.length; i++) {
         country_rate.push(parseFloat(result.values[i][1]));
+        if(parseFloat(result.values[i][1])>max_country_rate)
+          max_country_rate= parseFloat(result.values[i][1]);
       }
       for (i = 1; i < result.values.length; i++) {
         country_list_from_sheet.push(result.values[i][0]);
@@ -392,7 +368,7 @@ function chart2_calc(){
       }
       for (i = 1; i < result.values.length; i++) {
         if(parseFloat(result.values[i][2])== 6.00)
-          vertical_line_data.push(33);
+          vertical_line_data.push(max_country_rate);
         else
           vertical_line_data.push(0);
       }
@@ -401,9 +377,7 @@ function chart2_calc(){
         (value, index) => {
           if (country_list_from_sheet[index] == global_country_name ||
               country_list_from_sheet[index]== "China"  ||
-              country_list_from_sheet[index]== "Spain"  ||
               country_list_from_sheet[index]== "Italy"  ||
-              country_list_from_sheet[index]== "Germany"  ||
               country_list_from_sheet[index]== "US"  ||
               country_list_from_sheet[index]== "India") {
             pointBackgroundColor.push('#f5b539');
@@ -456,7 +430,8 @@ function chart2(){
       scales: {
         xAxes: [{
           gridLines: {display:false},
-          scaleLabel: {display: true, labelString: 'Log Rate of Confirmed Cases'}
+          scaleLabel: {display: true, labelString: 'Log Rate of Confirmed Cases'},
+          ticks: {autoSkip: true, maxTicksLimit: 10}
         }],
         yAxes: [{
           gridLines: {display:false},
@@ -478,9 +453,7 @@ function chart2(){
           label: function(tooltipItem, data) {
               if (country_list_from_sheet[tooltipItem.index]== global_country_name ||
                   country_list_from_sheet[tooltipItem.index]== "China"  ||
-                  country_list_from_sheet[tooltipItem.index]== "Spain"  ||
                   country_list_from_sheet[tooltipItem.index]== "Italy"  ||
-                  country_list_from_sheet[tooltipItem.index]== "Germany"  ||
                   country_list_from_sheet[tooltipItem.index]== "US"  ||
                   country_list_from_sheet[tooltipItem.index]== "India"){
                 var label = country_list_from_sheet[tooltipItem.index];
@@ -680,19 +653,3 @@ Chart.pluginService.register({
                 }
             }
         })
-
-
-//Client ID
-//723775460528-ms81n6oc426rtfad5badnl6nite9276g.apps.googleusercontent.com
-
-//Client ID 2
-//901482994981-eh28g3pk2s3tqfr5sgu2pmgr9iuadk2s.apps.googleusercontent.com
-
-//API KEY
-//AIzaSyDq2RHtMJTUbpgKgmkegATfzQvpKPun1OA
-
-//API KEY 2
-//AIzaSyB2AdWGI5geyvPnxxTPKUv6rUvbrLuK8bE
-
-//Sheet ID
-//1tM6zsYBhClbntPJIzkPNhBNEs-4tbVMEyd83zm3mAcM
