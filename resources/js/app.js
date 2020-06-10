@@ -109,9 +109,10 @@ function fetchData(user_country){
     }
     if (values_finished==1){       //predicted cases data is present
       for (endi_for_predicted = endi; endi_for_predicted < result.values.length; endi_for_predicted++) {
-        if (result.values[endi_for_predicted][0]!= user_country){
+        if (result.values[endi_for_predicted][0]!= user_country)
           break;
-        }
+        else if (parseInt(result.values[endi_for_predicted+1][5])==0)
+          break;
       }
     }
     else{           //predicted cases data is not present
